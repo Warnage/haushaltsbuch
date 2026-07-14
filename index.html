@@ -246,23 +246,27 @@
 
   /* ===== Handy-Ansicht (Hochformat): Bottom-Nav statt Sidebar, FAB statt Topbar-Button ===== */
   @media(max-width:700px){
+    /* Backstop gegen seitliches Wackeln */
+    html,body{overflow-x:hidden}
     .sidebar{display:none}
     .mobile-only{display:grid}
     .bottomnav{
       display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
       position:fixed;left:0;right:0;bottom:0;z-index:50;
       background:var(--bg2);border-top:1px solid var(--line);
-      padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+      padding:6px calc(8px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
     }
     .bottomnav .nav-btn{flex-direction:column;gap:3px;padding:7px 2px;border-radius:10px;font-size:10px}
     .bottomnav .nav-btn .ic{font-size:20px;width:auto}
     .bottomnav .nav-btn.active{background:none;color:var(--accent);box-shadow:none}
     .bottomnav .nav-btn:hover{background:none}
 
-    .topbar{padding:12px 14px;gap:8px}
-    .topbar h2{font-size:17px}
+    /* Statusleiste oben freihalten (Android zeichnet PWAs randlos) */
+    .topbar{padding:calc(10px + env(safe-area-inset-top)) 12px 10px;gap:8px}
+    .topbar h2{font-size:16px}
     .topbar .sub{display:none}
-    #globalMonth{min-width:0;max-width:128px}
+    .icon-btn{width:34px;height:34px;font-size:15px}
+    #globalMonth{min-width:0;max-width:118px}
     .content{padding:16px 14px calc(150px + env(safe-area-inset-bottom))}
 
     /* "Neue Buchung" wird zum runden Floating-Button ueber der Bottom-Nav */
@@ -271,11 +275,19 @@
       width:56px;height:56px;border-radius:50%;justify-content:center;padding:0;
       box-shadow:0 8px 20px rgba(79,111,224,.45);
     }
-    #addBtn .plus{font-size:26px}
+    /* Plus als CSS-Striche zeichnen – die ＋-Glyphe sitzt je nach Geraete-Font schief */
+    #addBtn .plus{display:none}
     #addBtn .txt{display:none}
+    #addBtn::before,#addBtn::after{
+      content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+      background:#fff;border-radius:2px;
+    }
+    #addBtn::before{width:22px;height:3px}
+    #addBtn::after{width:3px;height:22px}
 
-    .stats{gap:10px}
-    .stat{padding:14px}
+    .stats{gap:10px;grid-template-columns:1fr!important} /* !important: Wiederkehrend-Seite setzt 3 Spalten inline */
+    .stat{padding:12px 14px}
+    .stat .label{padding-right:34px}
     .stat .value{font-size:19px}
     .stat .ic-badge{width:32px;height:32px;font-size:16px;right:10px;top:10px}
     .dash-row{gap:12px;margin-bottom:12px}
@@ -286,13 +298,47 @@
     .toolbar .field{flex:1 1 100%}
     /* "+ Buchung" in der Filterleiste ist mobil durch den FAB abgedeckt */
     .toolbar .btn.primary{display:none}
+    /* Breite Zeilen umbrechen statt seitlich ueberzulaufen */
+    .seg{max-width:100%;overflow-x:auto;padding:2px}
+    .seg button{white-space:nowrap;padding:6px 8px;font-size:12px}
+    #txSummary{flex-wrap:wrap;justify-content:flex-start!important;gap:12px!important}
+    .type-toggle button{font-size:12px;padding:11px 4px}
+
+    /* Wiederkehrend: Eintraege kompakt zweizeilig */
+    .rec-head{flex-wrap:wrap;gap:12px}
+    .rec-list{gap:8px}
+    .rec-item{
+      display:grid;grid-template-columns:auto 1fr auto;
+      column-gap:10px;row-gap:2px;align-items:center;padding:10px 12px;border-radius:12px;
+    }
+    .rec-item .rec-ic{grid-column:1;grid-row:1/3;width:36px;height:36px;font-size:17px;border-radius:10px}
+    .rec-item .rec-main{grid-column:2;grid-row:1/3;min-width:0}
+    .rec-item .rec-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rec-item .rec-sub{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rec-item .rec-amt{grid-column:3;grid-row:1;font-size:14px;justify-self:end}
+    .rec-item>.flex{grid-column:3;grid-row:2;justify-self:end;gap:2px!important}
+    .rec-next{grid-column:1/-1;grid-row:3;justify-self:start;font-size:10px;padding:3px 8px;margin-top:4px}
+    .rec-item .mini-btn{width:26px;height:26px;font-size:12px}
+
+    /* Kontokarten kompakt: Icon neben Name/Typ */
+    .acct-grid{gap:10px}
+    .acct-card{
+      display:grid;grid-template-columns:auto 1fr;column-gap:12px;row-gap:0;
+      align-items:center;padding:12px 14px;
+    }
+    .acct-card .acct-ic{grid-row:1/3;width:38px;height:38px;font-size:19px;border-radius:11px;margin:0}
+    .acct-card .acct-name{grid-column:2;font-size:14.5px}
+    .acct-card .acct-type{grid-column:2;margin-bottom:0;font-size:11.5px}
+    .acct-card .acct-bal{grid-column:1/-1;font-size:20px;margin-top:6px}
+    .acct-card .acct-meta{grid-column:1/-1;margin-top:0;font-size:11px}
 
     /* Charts behalten ihre Lesbarkeit und scrollen horizontal statt zu schrumpfen */
+    .dash-row>.card{min-width:0}
     .chart-box{overflow-x:auto}
     #chartBars svg,#chartLine svg{min-width:520px}
     #chartSavings svg{min-width:860px}
 
-    .overlay{padding:10px}
+    .overlay{padding:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom))}
     .modal-head{padding:18px 18px 10px}
     .modal-body{padding:6px 18px 18px}
     .modal-foot{padding:0 18px 18px}
@@ -696,7 +742,7 @@ let globalMonth = "all";
 function buildMonthOptions(){
   const sel = $("#globalMonth");
   const keys = [...new Set(state.transactions.map(t=>monthKey(t.date)))].sort().reverse();
-  sel.innerHTML = `<option value="all">Gesamter Zeitraum</option>` +
+  sel.innerHTML = `<option value="all">Gesamt</option>` +
     keys.map(k=>`<option value="${k}">${new Date(k+"-01").toLocaleDateString("de-DE",{month:"long",year:"numeric"})}</option>`).join("");
   sel.value = globalMonth;
 }
@@ -1299,12 +1345,12 @@ function renderRecurring(){
   const monthlyIncome=state.recurring.filter(r=>r.kind==="income").reduce((s,r)=>s+toMonthly(r),0);
   const monthlyExpense=state.recurring.filter(r=>r.kind==="expense").reduce((s,r)=>s+toMonthly(r),0);
   c.innerHTML=`
-    <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stats stats-rec" style="grid-template-columns:repeat(3,1fr)">
       <div class="stat"><div class="label">📥 Fixe Einnahmen / Monat</div><div class="value pos">${EUR(monthlyIncome)}</div><div class="ic-badge" style="background:var(--green-bg)">📥</div></div>
       <div class="stat"><div class="label">📤 Fixe Ausgaben / Monat</div><div class="value neg">${EUR(monthlyExpense)}</div><div class="ic-badge" style="background:var(--red-bg)">📤</div></div>
       <div class="stat"><div class="label">💰 Monatlicher Überschuss</div><div class="value ${monthlyIncome-monthlyExpense>=0?'pos':'neg'}">${EUR(monthlyIncome-monthlyExpense)}</div><div class="ic-badge" style="background:rgba(108,140,255,.15)">⚖️</div></div>
     </div>
-    <div class="flex" style="justify-content:space-between;margin-bottom:16px">
+    <div class="flex rec-head" style="justify-content:space-between;margin-bottom:16px">
       <div class="card-sub" style="margin:0">Wiederkehrende Buchungen werden automatisch erzeugt, wenn sie fällig sind.</div>
       <button class="btn primary" onclick="openRec()">＋ Wiederkehrende Buchung</button>
     </div>
