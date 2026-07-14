@@ -1,0 +1,6 @@
+# Persönliche Datenexporte niemals committen
+haushaltsbuch_*.json
+transaktionen_*.csv
+
+# Lokale Tool-Konfiguration
+.claude/
