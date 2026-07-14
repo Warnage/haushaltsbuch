@@ -1,7 +1,7 @@
 /* Service Worker: cached alle App-Dateien, damit die App offline startet.
    Bei jeder Änderung an index.html o. Ä. die Versionsnummer hochzählen –
    nur dann wird der neue Cache installiert und der alte aufgeräumt. */
-const CACHE_NAME = "haushaltsbuch-v1";
+const CACHE_NAME = "haushaltsbuch-v2";
 const ASSETS = [
   "./",
   "./index.html",

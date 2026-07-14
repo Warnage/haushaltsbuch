@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Haushaltsbuch</title>
 <meta name="theme-color" content="#0E2A33">
 <link rel="manifest" href="./manifest.json">
@@ -231,6 +231,10 @@
   .center{text-align:center}
   .flex{display:flex;align-items:center;gap:10px}
 
+  /* Mobil-Elemente: auf dem Desktop unsichtbar */
+  .mobile-only{display:none}
+  .bottomnav{display:none}
+
   @media(max-width:900px){
     .stats{grid-template-columns:repeat(2,1fr)}
     .dash-row,.dash-row.thirds{grid-template-columns:1fr}
@@ -238,6 +242,66 @@
     .brand h1,.brand small,.nav-btn span.txt,.sidebar-foot .txt{display:none}
     .nav-btn{justify-content:center}
     .content{padding:18px}
+  }
+
+  /* ===== Handy-Ansicht (Hochformat): Bottom-Nav statt Sidebar, FAB statt Topbar-Button ===== */
+  @media(max-width:700px){
+    .sidebar{display:none}
+    .mobile-only{display:grid}
+    .bottomnav{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+      position:fixed;left:0;right:0;bottom:0;z-index:50;
+      background:var(--bg2);border-top:1px solid var(--line);
+      padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    }
+    .bottomnav .nav-btn{flex-direction:column;gap:3px;padding:7px 2px;border-radius:10px;font-size:10px}
+    .bottomnav .nav-btn .ic{font-size:20px;width:auto}
+    .bottomnav .nav-btn.active{background:none;color:var(--accent);box-shadow:none}
+    .bottomnav .nav-btn:hover{background:none}
+
+    .topbar{padding:12px 14px;gap:8px}
+    .topbar h2{font-size:17px}
+    .topbar .sub{display:none}
+    #globalMonth{min-width:0;max-width:128px}
+    .content{padding:16px 14px calc(150px + env(safe-area-inset-bottom))}
+
+    /* "Neue Buchung" wird zum runden Floating-Button ueber der Bottom-Nav */
+    #addBtn{
+      position:fixed;right:16px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:60;
+      width:56px;height:56px;border-radius:50%;justify-content:center;padding:0;
+      box-shadow:0 8px 20px rgba(79,111,224,.45);
+    }
+    #addBtn .plus{font-size:26px}
+    #addBtn .txt{display:none}
+
+    .stats{gap:10px}
+    .stat{padding:14px}
+    .stat .value{font-size:19px}
+    .stat .ic-badge{width:32px;height:32px;font-size:16px;right:10px;top:10px}
+    .dash-row{gap:12px;margin-bottom:12px}
+    .card{padding:14px}
+
+    .input,.select{min-width:0}
+    .search{min-width:0;width:100%}
+    .toolbar .field{flex:1 1 100%}
+    /* "+ Buchung" in der Filterleiste ist mobil durch den FAB abgedeckt */
+    .toolbar .btn.primary{display:none}
+
+    /* Charts behalten ihre Lesbarkeit und scrollen horizontal statt zu schrumpfen */
+    .chart-box{overflow-x:auto}
+    #chartBars svg,#chartLine svg{min-width:520px}
+    #chartSavings svg{min-width:860px}
+
+    .overlay{padding:10px}
+    .modal-head{padding:18px 18px 10px}
+    .modal-body{padding:6px 18px 18px}
+    .modal-foot{padding:0 18px 18px}
+    .form-row{grid-template-columns:1fr}
+
+    td{padding:11px 10px}
+    th{padding:0 10px 10px}
+    .row-actions{opacity:1}
+    .acct-card .acct-actions{opacity:1}
   }
 </style>
 </head>
@@ -270,10 +334,20 @@
       <div class="field" id="monthFilterWrap">
         <select class="select" id="globalMonth"></select>
       </div>
-      <button class="btn primary" id="addBtn"><span style="font-size:17px">＋</span> Neue Buchung</button>
+      <button class="icon-btn mobile-only" id="themeBtnM" title="Design wechseln">🌓</button>
+      <button class="icon-btn mobile-only" id="dataBtnM" title="Daten verwalten">💾</button>
+      <button class="btn primary" id="addBtn"><span class="plus" style="font-size:17px">＋</span><span class="txt">Neue Buchung</span></button>
     </div>
     <div class="content" id="content"></div>
   </main>
+
+  <!-- BOTTOM NAV (nur mobil) -->
+  <nav class="bottomnav">
+    <button class="nav-btn active" data-tab="dashboard"><span class="ic">📊</span><span class="lbl">Dashboard</span></button>
+    <button class="nav-btn" data-tab="transactions"><span class="ic">📋</span><span class="lbl">Buchungen</span></button>
+    <button class="nav-btn" data-tab="accounts"><span class="ic">🏦</span><span class="lbl">Konten</span></button>
+    <button class="nav-btn" data-tab="recurring"><span class="ic">🔁</span><span class="lbl">Wiederkehrend</span></button>
+  </nav>
 </div>
 
 <!-- TRANSACTION MODAL -->
@@ -1555,6 +1629,8 @@ $$(".nav-btn[data-tab]").forEach(b=>b.onclick=()=>navigate(b.dataset.tab));
 $("#addBtn").onclick=()=>{ if(!state.accounts.length){toast("Bitte zuerst ein Konto anlegen ⚠️");navigate("accounts");return;} openTx(); };
 $("#globalMonth").onchange=e=>{ globalMonth=e.target.value; render(); };
 $("#dataBtn").onclick=()=>{ $("#dataModal").classList.add("open"); updateStorageStatus(); };
+$("#dataBtnM").onclick=()=>$("#dataBtn").onclick();
+$("#themeBtnM").onclick=()=>$("#themeBtn").onclick();
 $$("[data-close]").forEach(b=>b.onclick=closeModals);
 $$(".overlay").forEach(o=>{ if(o.id==="catModal") return; o.onclick=e=>{ if(e.target===o) closeModals(); }; });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ if($("#catModal").classList.contains("open")) $("#catModal").classList.remove("open"); else closeModals(); } });
