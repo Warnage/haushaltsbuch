@@ -1672,6 +1672,11 @@ function toast(msg){
 
 /* ============================== EVENTS / INIT ============================== */
 $$(".nav-btn[data-tab]").forEach(b=>b.onclick=()=>navigate(b.dataset.tab));
+/* Bottom-Nav: bei Touch schon auf pointerdown wechseln – ein Tipp waehrend des
+   Nachlauf-Scrollens stoppt sonst nur das Scrollen und verschluckt den Klick */
+$$(".bottomnav .nav-btn[data-tab]").forEach(b=>b.addEventListener("pointerdown",e=>{
+  if(e.pointerType!=="mouse") navigate(b.dataset.tab);
+}));
 $("#addBtn").onclick=()=>{ if(!state.accounts.length){toast("Bitte zuerst ein Konto anlegen ⚠️");navigate("accounts");return;} openTx(); };
 $("#globalMonth").onchange=e=>{ globalMonth=e.target.value; render(); };
 $("#dataBtn").onclick=()=>{ $("#dataModal").classList.add("open"); updateStorageStatus(); };
