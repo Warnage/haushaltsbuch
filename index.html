@@ -246,8 +246,12 @@
 
   /* ===== Handy-Ansicht (Hochformat): Bottom-Nav statt Sidebar, FAB statt Topbar-Button ===== */
   @media(max-width:700px){
-    /* Backstop gegen seitliches Wackeln */
-    html,body{overflow-x:hidden}
+    /* Nur der Inhalt zwischen den Leisten scrollt – so bleibt der
+       Scrollbalken unterhalb der Topbar (und hinter der Bottom-Nav) */
+    html,body{overflow:hidden;height:100%}
+    .app{height:100vh;height:100dvh}
+    .main{height:100%;overflow:hidden}
+    .content{flex:1;overflow-y:auto;min-height:0}
     .sidebar{display:none}
     .mobile-only{display:grid}
     .bottomnav{
