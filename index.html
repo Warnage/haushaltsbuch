@@ -1483,9 +1483,20 @@ function updateNoteSug(){
 $("#txNote").addEventListener("input",updateNoteSug);
 $("#txNote").addEventListener("focus",updateNoteSug);
 $("#txNote").addEventListener("blur",()=>setTimeout(()=>$("#txNoteSug").classList.remove("open"),150));
+/* Auswahl erst beim Loslassen uebernehmen – ein Wisch zum Scrollen
+   in der Liste darf nichts auswaehlen */
+let sugStart=null;
 $("#txNoteSug").addEventListener("pointerdown",e=>{
-  const b=e.target.closest("[data-sug]"); if(!b) return;
   e.preventDefault(); // Fokus im Eingabefeld halten
+  sugStart={x:e.clientX,y:e.clientY};
+});
+$("#txNoteSug").addEventListener("pointercancel",()=>{ sugStart=null; });
+$("#txNoteSug").addEventListener("pointerup",e=>{
+  if(!sugStart) return;
+  const moved=Math.hypot(e.clientX-sugStart.x,e.clientY-sugStart.y);
+  sugStart=null;
+  if(moved>10) return; // gescrollt, nicht getippt
+  const b=e.target.closest("[data-sug]"); if(!b) return;
   $("#txNote").value=b.dataset.sug;
   $("#txNoteSug").classList.remove("open");
 });
