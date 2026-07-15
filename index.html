@@ -201,6 +201,16 @@
   .amount-wrap{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 16px;margin-bottom:16px}
   .amount-wrap .cur{font-size:26px;font-weight:800;color:var(--muted)}
 
+  /* Beschreibungs-Vorschlaege */
+  .sug-box{
+    position:absolute;left:0;right:0;bottom:100%;margin-bottom:6px;display:none;
+    background:var(--card2);border:1px solid var(--line);border-radius:10px;
+    box-shadow:var(--shadow);z-index:30;max-height:190px;overflow-y:auto;
+  }
+  .sug-box.open{display:block}
+  .sug-box button{display:block;width:100%;text-align:left;padding:9px 12px;font-size:13.5px;color:var(--text)}
+  .sug-box button:hover{background:var(--card)}
+
   /* category chips selector */
   .chip-select{display:flex;flex-wrap:wrap;gap:8px}
   .chip-opt{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);font-size:13px;font-weight:600;color:var(--muted);transition:.12s}
@@ -437,7 +447,10 @@
       </div>
       <div class="form-grp">
         <label>Beschreibung / Notiz</label>
-        <input type="text" class="input" id="txNote" placeholder="z.B. Wocheneinkauf REWE">
+        <div style="position:relative">
+          <input type="text" class="input" id="txNote" placeholder="z.B. Wocheneinkauf REWE" autocomplete="off">
+          <div class="sug-box" id="txNoteSug"></div>
+        </div>
       </div>
     </div>
     <div class="modal-foot">
@@ -1417,6 +1430,7 @@ function openTx(id){
   }
   updateTxFormMode();
   if(txType!=="transfer") buildCatSelect("#txCatSelect",txType,c=>{txCat=c;});
+  $("#txNoteSug").classList.remove("open");
   m.classList.add("open");
   setTimeout(()=>$("#txAmount").focus(),50);
 }
@@ -1445,6 +1459,36 @@ function buildCatSelect(sel,kind,onPick){
     onPick(b.dataset.cat);
   };
 }
+
+/* ---------- Beschreibungs-Vorschlaege (aus allen bisherigen Buchungen) ---------- */
+function noteSuggestions(){
+  const seen=new Set(), out=[];
+  for(const t of [...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date))){
+    const n=(t.note||"").trim(); if(!n) continue;
+    const k=n.toLowerCase(); if(seen.has(k)) continue;
+    seen.add(k); out.push(n);
+  }
+  return out;
+}
+function updateNoteSug(){
+  const box=$("#txNoteSug");
+  const q=$("#txNote").value.trim().toLowerCase();
+  let list=noteSuggestions().filter(n=>n.toLowerCase().includes(q));
+  if(q) list=list.filter(n=>n.toLowerCase()!==q); // exakte Eingabe nicht nochmal anbieten
+  list=list.slice(0,8);
+  if(!list.length){ box.classList.remove("open"); box.innerHTML=""; return; }
+  box.innerHTML=list.map(n=>`<button type="button" data-sug="${esc(n)}">${esc(n)}</button>`).join("");
+  box.classList.add("open");
+}
+$("#txNote").addEventListener("input",updateNoteSug);
+$("#txNote").addEventListener("focus",updateNoteSug);
+$("#txNote").addEventListener("blur",()=>setTimeout(()=>$("#txNoteSug").classList.remove("open"),150));
+$("#txNoteSug").addEventListener("pointerdown",e=>{
+  const b=e.target.closest("[data-sug]"); if(!b) return;
+  e.preventDefault(); // Fokus im Eingabefeld halten
+  $("#txNote").value=b.dataset.sug;
+  $("#txNoteSug").classList.remove("open");
+});
 
 $("#txSave").onclick=()=>{
   const amt=parseNum($("#txAmount").value);
