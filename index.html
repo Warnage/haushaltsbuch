@@ -1690,7 +1690,9 @@ $("#resetBtn").onclick=async()=>{
   if(!confirm("Wirklich ALLE Daten unwiderruflich löschen?")) return;
   try{ if(db) await dbDelete(); }catch(e){}
   localStorage.removeItem(LS_KEY);
-  state=seed(); save(); closeModals(); navigate("dashboard"); toast("Daten zurückgesetzt");
+  // leere App statt Demo-Daten; Theme und Standard-Kategorien bleiben
+  state={accounts:[], transactions:[], recurring:[], categories:[...DEFAULT_CATS], theme:state&&state.theme||"dark"};
+  save(); closeModals(); navigate("dashboard"); toast("Alle Daten gelöscht");
 };
 
 function download(name,content,type){
